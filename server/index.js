@@ -35,7 +35,9 @@ const addTransaction = async (req, res) => {
     const transaction = new Transaction(req.body);
     await transaction.save();
     const transactions = await Transaction.find();
-    res.status(201).json({ message: "Transaction created successfully", transactions });
+    res
+      .status(201)
+      .json({ message: "Transaction created successfully", transactions });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -46,7 +48,9 @@ app.delete("/transactions/:id", async (req, res) => {
     const { id } = req.params;
     await Transaction.findByIdAndDelete(id);
     const transactions = await Transaction.find();
-    res.status(200).json({ message: "Transaction deleted successfully", transactions });
+    res
+      .status(200)
+      .json({ message: "Transaction deleted successfully", transactions });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
