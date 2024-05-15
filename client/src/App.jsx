@@ -1,35 +1,68 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
 
-function App() {
-  const [count, setCount] = useState(0)
+function ExpenseTracker() {
+  const [transactions, setTransactions] = useState([]);
+  const [amount, setAmount] = useState('');
+  const [description, setDescription] = useState('');
+  const [type, setType] = useState('credit'); // Default type is credit
+
+  const addTransaction = () => {
+    if (!amount || !description) {
+      alert('Please enter valid amount and description.');
+      return;
+    }
+
+    const newTransaction = {
+      amount: parseFloat(amount),
+      description: description.trim(),
+      type: type // Assigning the type of transaction
+    };
+
+    setTransactions([...transactions, newTransaction]);
+    setAmount('');
+    setDescription('');
+  };
+
+  const deleteTransaction = (index) => {
+    const updatedTransactions = [...transactions];
+    updatedTransactions.splice(index, 1);
+    setTransactions(updatedTransactions);
+  };
+
+  const balance = transactions.reduce((total, transaction) => {
+    if (transaction.type === 'credit') {
+      return total + transaction.amount;
+    } else {
+      return total - transaction.amount;
+    }
+  }, 0);
 
   return (
-    <>
+    <div>
+      <h1>Expense Tracker</h1>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <label htmlFor="amount">Amount:</label>
+        <input type="number" id="amount" value={amount} onChange={(e) => setAmount(e.target.value)} />
+        <label htmlFor="description">Description:</label>
+        <input type="text" id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
+        <label htmlFor="type">Type:</label>
+        <select id="type" value={type} onChange={(e) => setType(e.target.value)}>
+          <option value="credit">Credit</option>
+          <option value="debit">Debit</option>
+        </select>
+        <button onClick={addTransaction}>Add Transaction</button>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      <ul>
+        {transactions.map((transaction, index) => (
+          <li key={index}>
+            {transaction.description} - {transaction.type === 'credit' ? '+' : '-'} ₹{transaction.amount.toFixed(2)}
+            <button onClick={() => deleteTransaction(index)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+      <p>Balance: ₹{balance.toFixed(2)}</p>
+    </div>
+  );
 }
 
-export default App
+export default ExpenseTracker;
