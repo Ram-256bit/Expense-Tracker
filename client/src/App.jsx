@@ -1,40 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 function ExpenseTracker() {
   const [transactions, setTransactions] = useState([]);
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
-  const [type, setType] = useState('credit'); // Default type is credit
+  const [type, setType] = useState('credit');
 
-  const addTransaction = () => {
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
+  const fetchTransactions = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/transactions');
+      setTransactions(response.data.transactions);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+    }
+  };
+
+  const addTransaction = async () => {
     if (!amount || !description) {
       alert('Please enter valid amount and description.');
       return;
     }
 
-    const newTransaction = {
-      amount: parseFloat(amount),
-      description: description.trim(),
-      type: type // Assigning the type of transaction
-    };
-
-    setTransactions([...transactions, newTransaction]);
-    setAmount('');
-    setDescription('');
+    try {
+      await axios.post('http://localhost:3000/transactions', {
+        amount: parseFloat(amount),
+        description: description.trim(),
+        debit: type === 'debit'
+      });
+      setAmount('');
+      setDescription('');
+      fetchTransactions(); // Refresh transactions after adding a new one
+    } catch (error) {
+      console.error('Error adding transaction:', error);
+    }
   };
 
-  const deleteTransaction = (index) => {
-    const updatedTransactions = [...transactions];
-    updatedTransactions.splice(index, 1);
-    setTransactions(updatedTransactions);
+  const deleteTransaction = async (id) => {
+    try {
+      await axios.delete(`http://localhost:3000/transactions/${id}`);
+      fetchTransactions(); // Refresh transactions after deleting one
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+    }
   };
 
   const balance = transactions.reduce((total, transaction) => {
-    if (transaction.type === 'credit') {
-      return total + transaction.amount;
-    } else {
-      return total - transaction.amount;
-    }
+    return transaction.debit ? total - transaction.amount : total + transaction.amount;
   }, 0);
 
   return (
@@ -53,10 +69,10 @@ function ExpenseTracker() {
         <button onClick={addTransaction}>Add Transaction</button>
       </div>
       <ul>
-        {transactions.map((transaction, index) => (
-          <li key={index}>
-            {transaction.description} - {transaction.type === 'credit' ? '+' : '-'} ₹{transaction.amount.toFixed(2)}
-            <button onClick={() => deleteTransaction(index)}>Delete</button>
+        {transactions.map((transaction) => (
+          <li key={transaction._id}>
+            {transaction.description} - {transaction.debit ? '-' : '+'} ₹{transaction.amount.toFixed(2)}
+            <button onClick={() => deleteTransaction(transaction._id)}>Delete</button>
           </li>
         ))}
       </ul>
