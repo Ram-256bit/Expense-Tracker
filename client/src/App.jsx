@@ -85,7 +85,7 @@ function ExpenseTracker() {
       <ul>
         {transactions.map((transaction) => (
           <li key={transaction._id}>
-            {transaction.description} - {transaction.debit ? '-' : '+'} ₹{transaction.amount.toFixed(2)}
+            {transaction.description} - {transaction.debit ? '-' : '+'} ₹{transaction.amount.toFixed(2)} {transaction.category}
             <button onClick={() => deleteTransaction(transaction._id)}>Delete</button>
           </li>
         ))}
