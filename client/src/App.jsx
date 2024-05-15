@@ -7,6 +7,7 @@ function ExpenseTracker() {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState('credit');
+  const [category, setCategory] = useState('other');
 
   useEffect(() => {
     fetchTransactions();
@@ -31,7 +32,8 @@ function ExpenseTracker() {
       await axios.post('http://localhost:3000/transactions', {
         amount: parseFloat(amount),
         description: description.trim(),
-        debit: type === 'debit'
+        debit: type === 'debit',
+        category: category
       });
       setAmount('');
       setDescription('');
@@ -60,13 +62,24 @@ function ExpenseTracker() {
       <div>
         <label htmlFor="amount">Amount:</label>
         <input type="number" id="amount" value={amount} onChange={(e) => setAmount(e.target.value)} />
+
         <label htmlFor="description">Description:</label>
         <input type="text" id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
+
         <label htmlFor="type">Type:</label>
         <select id="type" value={type} onChange={(e) => setType(e.target.value)}>
           <option value="credit">Credit</option>
           <option value="debit">Debit</option>
         </select>
+
+        <label htmlFor="category">Category:</label>
+        <select id="type" value={category} onChange={(e) => setCategory(e.target.value)}>
+          <option value="snacks">Snacks</option>
+          <option value="dinner">Dinner</option>
+          <option value="groceries">Groceries</option>
+          <option value="other">Others</option>
+        </select>
+
         <button onClick={addTransaction}>Add Transaction</button>
       </div>
       <ul>
