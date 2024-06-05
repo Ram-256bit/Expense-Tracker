@@ -7,7 +7,7 @@ function ExpenseTracker() {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState('credit');
-  const [category, setCategory] = useState('other');
+  const [showTransactions, setShowTransactions] = useState(false); // State to track if transactions should be shown
 
   useEffect(() => {
     fetchTransactions();
@@ -15,7 +15,7 @@ function ExpenseTracker() {
 
   const fetchTransactions = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/transactions');
+      const response = await axios.get('http://0.0.0.0:3000/transactions');
       setTransactions(response.data.transactions);
     } catch (error) {
       console.error('Error fetching transactions:', error);
@@ -29,11 +29,10 @@ function ExpenseTracker() {
     }
 
     try {
-      await axios.post('http://localhost:3000/transactions', {
+      await axios.post('http://0.0.0.0:3000/transactions', {
         amount: parseFloat(amount),
         description: description.trim(),
-        debit: type === 'debit',
-        category: category
+        debit: type === 'debit'
       });
       setAmount('');
       setDescription('');
@@ -45,12 +44,12 @@ function ExpenseTracker() {
 
   const deleteTransaction = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/transactions/${id}`);
+      await axios.delete(`http://0.0.0.0:3000/transactions/${id}`);
       fetchTransactions(); // Refresh transactions after deleting one
     } catch (error) {
       console.error('Error deleting transaction:', error);
     }
-  };
+  }
 
   const balance = transactions.reduce((total, transaction) => {
     return transaction.debit ? total - transaction.amount : total + transaction.amount;
@@ -62,34 +61,28 @@ function ExpenseTracker() {
       <div>
         <label htmlFor="amount">Amount:</label>
         <input type="number" id="amount" value={amount} onChange={(e) => setAmount(e.target.value)} />
-
         <label htmlFor="description">Description:</label>
         <input type="text" id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
-
         <label htmlFor="type">Type:</label>
         <select id="type" value={type} onChange={(e) => setType(e.target.value)}>
           <option value="credit">Credit</option>
           <option value="debit">Debit</option>
         </select>
-
-        <label htmlFor="category">Category:</label>
-        <select id="type" value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option value="snacks">Snacks</option>
-          <option value="dinner">Dinner</option>
-          <option value="groceries">Groceries</option>
-          <option value="other">Others</option>
-        </select>
-
         <button onClick={addTransaction}>Add Transaction</button>
+        <button onClick={() => setShowTransactions(!showTransactions)}>
+          {showTransactions ? 'Hide Transactions' : 'Show Transactions'}
+        </button>
       </div>
-      <ul>
-        {transactions.map((transaction) => (
-          <li key={transaction._id}>
-            {transaction.description} - {transaction.debit ? '-' : '+'} ₹{transaction.amount.toFixed(2)} {transaction.category}
-            <button onClick={() => deleteTransaction(transaction._id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
+      {showTransactions && (
+        <ul>
+          {transactions.map((transaction) => (
+            <li key={transaction._id}>
+              {transaction.description} - {transaction.debit ? '-' : '+'} ₹{transaction.amount.toFixed(2)}
+              <button onClick={() => deleteTransaction(transaction._id)}>Delete</button>
+            </li>
+          ))}
+        </ul>
+      )}
       <p>Balance: ₹{balance.toFixed(2)}</p>
     </div>
   );
